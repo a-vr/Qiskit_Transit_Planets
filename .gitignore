@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb~
+
+# Data (raw and processed downloads — large binary/CSV files)
+data/raw/known/*.csv
+data/raw/unknown/*.csv
+data/processed/*.npy
+data/processed/*.pkl
+data/kepler_stellar_17.csv
+data/kepler_stellar_17.csv.gz
+
+# Downloaded catalog cache (root level, from old scripts)
+kepler_stellar_17.csv
+kepler_stellar_17.csv.gz
+lightcurves_known/
+lightcurves_unknown/
+normalized_lightcurves_known/
+normalized_lightcurves_unknown/
+predicted_planets/
+
+# Model artifacts
+models/*.pkl
+models/*.joblib
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
