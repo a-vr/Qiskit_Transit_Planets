@@ -133,7 +133,7 @@ def build_qke_kernel():
 
 # ── VQC model ─────────────────────────────────────────────────────────────────
 
-def build_vqc(max_iter: int = 300, initial_point: np.ndarray = None):
+def build_vqc(max_iter: int = 300, initial_point: np.ndarray = None, callback=None):
     """Build a ``VQC`` (Variational Quantum Classifier).
 
     The VQC uses cross-entropy loss with a sigmoid output layer.  At each
@@ -143,6 +143,10 @@ def build_vqc(max_iter: int = 300, initial_point: np.ndarray = None):
         max_iter: Maximum COBYLA function evaluations (default 300).
         initial_point: Optional starting parameter values, shape ``(32,)``.
             If ``None``, uses random initialization from ``[0, 2π]``.
+        callback: Optional callable ``(weights, obj_func_eval) → None``
+            invoked at each optimizer step.  Must be passed at construction
+            time — assignment after construction is not forwarded to the
+            optimizer in newer versions of qiskit-machine-learning.
 
     Returns:
         ``qiskit_machine_learning.algorithms.VQC``
@@ -164,6 +168,7 @@ def build_vqc(max_iter: int = 300, initial_point: np.ndarray = None):
         optimizer=COBYLA(maxiter=max_iter),
         sampler=StatevectorSampler(),
         initial_point=initial_point,
+        callback=callback,
     )
 
 

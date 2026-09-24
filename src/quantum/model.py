@@ -227,9 +227,8 @@ class VQCModel:
         self._vqc = build_vqc(
             max_iter=self.max_iter,
             initial_point=self.initial_point,
+            callback=_callback,
         )
-        # Attach callback after construction to avoid duplicating it on warm restart
-        self._vqc.callback = _callback
 
         logger.info(
             "VQC: fitting on N=%d samples, max_iter=%d", len(y), self.max_iter
