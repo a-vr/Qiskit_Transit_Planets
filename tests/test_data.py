@@ -34,10 +34,21 @@ def _make_synthetic_lc(n: int = 500, inject_transit: bool = False):
 
 
 def _synthetic_csv(tmp_path, n: int = 500, inject_transit: bool = False) -> str:
-    """Save a synthetic LightCurve to a temp CSV and return its path."""
-    lc = _make_synthetic_lc(n=n, inject_transit=inject_transit)
+    """Save a synthetic light curve to a temp CSV and return its path.
+
+    Writes time and flux as explicit named columns rather than using
+    LightCurve.to_pandas(), because newer lightkurve versions set time
+    as the DataFrame index (losing it when index=False is passed to to_csv).
+    """
+    import pandas as pd
+    time = np.linspace(0, 30, n)
+    flux = np.random.default_rng(0).normal(1.0, 0.001, n)
+    if inject_transit:
+        for t0 in np.arange(0, 30, 5.0):
+            mask = np.abs(time - t0) < 0.05
+            flux[mask] -= 0.01
     path = str(tmp_path / "test_lc.csv")
-    lc.to_pandas().to_csv(path, index=False)
+    pd.DataFrame({"time": time, "flux": flux}).to_csv(path, index=False)
     return path
 
 
@@ -155,7 +166,7 @@ class TestFeatureExtraction:
 
 class TestBuildDataset:
     def _make_n_csvs(self, tmp_path, n: int, label_dir: str, inject: bool) -> list:
-        import lightkurve as lk
+        import pandas as pd
 
         rng = np.random.default_rng(42)
         paths = []
@@ -169,7 +180,7 @@ class TestBuildDataset:
                     mask = np.abs(time - t0) < 0.05
                     flux[mask] -= 0.01
             p = str(d / f"star_{i}.csv")
-            lk.LightCurve(time=time, flux=flux).to_pandas().to_csv(p, index=False)
+            pd.DataFrame({"time": time, "flux": flux}).to_csv(p, index=False)
             paths.append(p)
         return paths
 
