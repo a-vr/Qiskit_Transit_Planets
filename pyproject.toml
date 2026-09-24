@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qiskit-transit-planets"
+version = "0.1.0"
+description = "Quantum ML classifier for detecting exoplanet transits in Kepler light curves"
+authors = [{ name = "Avram Abadran", email = "avramabadran@uchicago.edu" }]
+requires-python = ">=3.9"
+readme = "README.md"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
