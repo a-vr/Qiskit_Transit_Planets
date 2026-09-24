@@ -10,6 +10,8 @@ import tempfile
 import numpy as np
 import pytest
 
+lk = pytest.importorskip("lightkurve", reason="lightkurve not installed")
+
 
 # ---------------------------------------------------------------------------
 # Helpers to build synthetic light curves

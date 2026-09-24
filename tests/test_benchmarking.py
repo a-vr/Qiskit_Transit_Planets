@@ -11,6 +11,10 @@ import tempfile
 import numpy as np
 import pytest
 
+pytest.importorskip("pandas", reason="pandas not installed")
+pytest.importorskip("matplotlib", reason="matplotlib not installed")
+pytest.importorskip("scipy", reason="scipy not installed")
+
 
 # ── Shared fixtures ────────────────────────────────────────────────────────────
 
@@ -85,7 +89,6 @@ class TestLogisticBaseline:
     def test_fit_returns_self(self, tiny_dataset):
         from src.classical.baseline import LogisticBaseline
         X_tr, y_tr, _, _ = tiny_dataset
-        assert LogisticBaseline().fit(X_tr, y_tr) is LogisticBaseline().fit(X_tr, y_tr).__class__()  # noqa — just check it runs
         m = LogisticBaseline()
         assert m.fit(X_tr, y_tr) is m
 
