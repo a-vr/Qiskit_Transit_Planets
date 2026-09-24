@@ -144,15 +144,14 @@ def build_vqc(max_iter: int = 300, initial_point: np.ndarray = None, callback=No
         initial_point: Optional starting parameter values, shape ``(32,)``.
             If ``None``, uses random initialization from ``[0, 2π]``.
         callback: Optional callable ``(weights, obj_func_eval) → None``
-            invoked at each optimizer step.  Must be passed at construction
-            time — assignment after construction is not forwarded to the
-            optimizer in newer versions of qiskit-machine-learning.
+            invoked at each optimizer step.  Implemented by wrapping the
+            objective function rather than relying on scipy COBYLA's callback
+            kwarg, which is silently ignored for that method.
 
     Returns:
         ``qiskit_machine_learning.algorithms.VQC``
     """
     from qiskit.primitives import StatevectorSampler
-    from qiskit_algorithms.optimizers import COBYLA
     from qiskit_machine_learning.algorithms import VQC
 
     feature_map = build_feature_map()
@@ -162,14 +161,50 @@ def build_vqc(max_iter: int = 300, initial_point: np.ndarray = None, callback=No
         rng = np.random.default_rng(42)
         initial_point = rng.uniform(0, 2 * np.pi, len(ansatz.parameters))
 
+    optimizer = _build_recording_cobyla(max_iter, callback)
+
     return VQC(
         feature_map=feature_map,
         ansatz=ansatz,
-        optimizer=COBYLA(maxiter=max_iter),
+        optimizer=optimizer,
         sampler=StatevectorSampler(),
         initial_point=initial_point,
-        callback=callback,
     )
+
+
+def _build_recording_cobyla(maxiter: int, on_eval):
+    """Return a COBYLA-compatible optimizer that records every loss evaluation.
+
+    scipy.optimize.minimize(method='COBYLA') ignores the callback kwarg, so
+    the only way to intercept evaluations is to wrap the objective function.
+    This class satisfies qiskit-machine-learning's optimizer duck-type
+    (a .minimize method returning an object with .x, .fun, .nfev).
+    """
+    import scipy.optimize
+
+    class _RecordingCOBYLA:
+        def minimize(self, fun, x0, jac=None, bounds=None, callback=None):
+            def _tracked(x):
+                val = float(fun(x))
+                if on_eval is not None:
+                    on_eval(np.asarray(x, dtype=float), val)
+                return val
+
+            res = scipy.optimize.minimize(
+                _tracked, x0, method="COBYLA",
+                options={"maxiter": maxiter},
+            )
+
+            class _Result:
+                pass
+
+            out = _Result()
+            out.x = res.x
+            out.fun = res.fun
+            out.nfev = res.nfev
+            return out
+
+    return _RecordingCOBYLA()
 
 
 # ── Circuit analysis ──────────────────────────────────────────────────────────
